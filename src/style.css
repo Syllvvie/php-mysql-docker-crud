@@ -255,6 +255,12 @@ form button {
     font-family: 'Courier New', monospace;
 }
 
+form button:disabled {
+    background: #3a4a3d;
+    color: #6b7d6e;
+    cursor: not-allowed;
+}
+
 .vazio {
     text-align: center;
     color: #5f8f68;
@@ -335,6 +341,44 @@ form button {
     object-fit: contain;
     image-rendering: pixelated;
     flex-shrink: 0;
+}
+
+.resultado-busca {
+    background: #0d1a0f;
+    border: 1px solid #2d4a30;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #cfffd8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+}
+
+.resultado-busca p {
+    margin: 2px 0;
+}
+
+.pokemon-fixo {
+    background: #0d1a0f;
+    border: 1px solid #2d4a30;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #cfffd8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+}
+
+.pokemon-fixo p {
+    margin: 2px 0;
+}
+
+.pokemon-fixo-nota {
+    color: #5f8f68;
+    font-size: 0.85em;
+    margin-top: 6px !important;
 }
 
 /* ===== D-pad decorativo ===== */

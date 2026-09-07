@@ -1,19 +1,17 @@
 <?php
-// criar.php - Formulário de cadastro (Create) de um novo Pokémon
 require 'db.php';
 
 $erro = '';
 
-// Se o formulário foi enviado via POST, processa o cadastro
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome'] ?? '');
     $tipo = trim($_POST['tipo'] ?? '');
     $descricao = trim($_POST['descricao'] ?? '');
-    $data_cadastro = $_POST['data_cadastro'] ?? '';
     $imagem_url = trim($_POST['imagem_url'] ?? '');
+    $data_cadastro = date('Y-m-d'); // sempre a data de hoje, definida pelo servidor
 
-    if ($nome === '' || $tipo === '' || $data_cadastro === '') {
-        $erro = 'Preencha ao menos Nome, Tipo e Data de cadastro.';
+    if ($nome === '' || $tipo === '') {
+        $erro = 'Busque um Pokémon na PokeAPI antes de salvar.';
     } else {
         $stmt = $pdo->prepare(
             "INSERT INTO pokemons (nome, tipo, descricao, data_cadastro, imagem_url) VALUES (?, ?, ?, ?, ?)"
@@ -54,35 +52,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="busca-api">
-                <label for="busca_pokeapi">Buscar na PokeAPI</label>
+                <label for="busca_pokeapi">Buscar Pokémon na PokeAPI</label>
                 <div class="busca-api-linha">
                     <input type="text" id="busca_pokeapi" placeholder="Ex: pikachu ou 25">
                     <button type="button" id="btn_buscar_pokeapi">Buscar</button>
                 </div>
-                <p id="busca_status" class="busca-status"></p>
+                <p id="busca_status" class="busca-status">Busque um Pokémon para poder salvar.</p>
             </div>
 
-            <img id="sprite_preview" class="sprite-preview" style="display:none;" alt="Sprite do Pokémon">
+            <div id="resultado_busca" class="resultado-busca" style="display:none;">
+                <img id="sprite_preview" class="sprite-preview" alt="Sprite do Pokémon">
+                <p><strong>Nome:</strong> <span id="resultado_nome"></span></p>
+                <p><strong>Tipo:</strong> <span id="resultado_tipo"></span></p>
+            </div>
 
             <form method="POST" action="criar.php">
-                <input type="hidden" id="imagem_url" name="imagem_url" value="<?= htmlspecialchars($_POST['imagem_url'] ?? '') ?>">
+                <input type="hidden" id="nome" name="nome" value="">
+                <input type="hidden" id="tipo" name="tipo" value="">
+                <input type="hidden" id="imagem_url" name="imagem_url" value="">
 
-                <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" placeholder="Ex: Pikachu"
-                       value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>">
+                <label for="descricao">Descrição (opcional)</label>
+                <textarea id="descricao" name="descricao" placeholder="Escreva uma anotação sua sobre esse Pokémon"></textarea>
 
-                <label for="tipo">Tipo</label>
-                <input type="text" id="tipo" name="tipo" placeholder="Ex: Elétrico"
-                       value="<?= htmlspecialchars($_POST['tipo'] ?? '') ?>">
-
-                <label for="descricao">Descrição</label>
-                <textarea id="descricao" name="descricao" placeholder="Uma breve descrição do Pokémon"><?= htmlspecialchars($_POST['descricao'] ?? '') ?></textarea>
-
-                <label for="data_cadastro">Data de cadastro</label>
-                <input type="date" id="data_cadastro" name="data_cadastro"
-                       value="<?= htmlspecialchars($_POST['data_cadastro'] ?? date('Y-m-d')) ?>">
-
-                <button type="submit">Salvar na Pokedex</button>
+                <button type="submit" id="btn_salvar" disabled>Salvar na Pokedex</button>
             </form>
 
             <a class="btn-voltar" href="index.php">&larr; Voltar para a listagem</a>
@@ -90,12 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        // Busca dados de um Pokémon na PokeAPI (https://pokeapi.co) e
-        // preenche automaticamente nome, tipo e imagem do formulário.
         document.getElementById('btn_buscar_pokeapi').addEventListener('click', async () => {
             const termo = document.getElementById('busca_pokeapi').value.trim().toLowerCase();
             const status = document.getElementById('busca_status');
+            const resultado = document.getElementById('resultado_busca');
             const preview = document.getElementById('sprite_preview');
+            const btnSalvar = document.getElementById('btn_salvar');
 
             if (!termo) {
                 status.textContent = 'Digite um nome ou número (ex: pikachu, 25).';
@@ -103,7 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             status.textContent = 'Buscando...';
-            preview.style.display = 'none';
+            resultado.style.display = 'none';
+            btnSalvar.disabled = true;
 
             try {
                 const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${termo}`);
@@ -115,26 +108,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 const dados = await resposta.json();
 
-                // Nome (com a primeira letra maiúscula)
-                document.getElementById('nome').value =
-                    dados.name.charAt(0).toUpperCase() + dados.name.slice(1);
-
-                // Tipos (a PokeAPI retorna uma lista, ex: ["electric"])
-                const tipos = dados.types.map(t => t.type.name);
-                document.getElementById('tipo').value = tipos.join(', ');
-
-                // Sprite (imagem oficial, com fallback para o sprite padrão)
+                const nomeFormatado = dados.name.charAt(0).toUpperCase() + dados.name.slice(1);
+                const tipos = dados.types.map(t => t.type.name).join(', ');
                 const sprite = dados.sprites.other['official-artwork'].front_default
                             || dados.sprites.front_default
                             || '';
+
+                // Preenche os campos escondidos que serão realmente enviados no POST
+                document.getElementById('nome').value = nomeFormatado;
+                document.getElementById('tipo').value = tipos;
                 document.getElementById('imagem_url').value = sprite;
 
+                // Preenche o preview visível (somente leitura)
+                document.getElementById('resultado_nome').textContent = nomeFormatado;
+                document.getElementById('resultado_tipo').textContent = tipos;
                 if (sprite) {
                     preview.src = sprite;
                     preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
                 }
 
-                status.textContent = `${dados.name} encontrado! Revise os dados e salve.`;
+                resultado.style.display = 'block';
+                btnSalvar.disabled = false;
+                status.textContent = `${nomeFormatado} encontrado! Adicione uma descrição (se quiser) e salve.`;
             } catch (erro) {
                 status.textContent = 'Erro ao conectar com a PokeAPI. Verifique sua internet.';
             }
