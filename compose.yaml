@@ -8,6 +8,8 @@ services: # Bloco onde definimos todos os containers que farão parte do ambient
       - "8080:80" # Mapeia a porta 80 do container para a porta 8080 do host (http://localhost:8080)
     volumes: # Mapeia os arquivos locais para dentro do container
       - ./src:/var/www/html # # Sincroniza a pasta do projeto local com a pasta raiz do servidor web Apache
+    command: >
+      bash -c "docker-php-ext-install pdo_mysql && apache2-foreground"  
     environment: # Variáveis de ambiente configuradas diretamente para acesso no código PHP
       DB_HOST: db # Nome do serviço do banco de dados (resolvido automaticamente pela rede interna)
       DB_USER: root # Nome de usuário administrativo do MySQL
