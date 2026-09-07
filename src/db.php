@@ -1,7 +1,7 @@
 <?php
 $host = getenv('DB_HOST') ?: 'db';
 $user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASSWORD') ?: 'root';
+$pass = getenv('DB_PASSWORD') ?: 'rootpassword';
 $dbname = getenv('DB_NAME') ?: 'pokedex';
 
 try {
