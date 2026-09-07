@@ -1,5 +1,4 @@
 <?php
-// index.php - Página de listagem (Read) de todos os Pokémons cadastrados
 require 'db.php';
 
 $stmt = $pdo->query("SELECT * FROM pokemons ORDER BY id ASC");
