@@ -1,0 +1,302 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Trebuchet MS', Verdana, sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 10px;
+    background: radial-gradient(circle at top, #333, #050505);
+}
+
+/* ===== Corpo da Pokedex ===== */
+.pokedex {
+    width: 380px;
+    max-width: 100%;
+    background: linear-gradient(180deg, #ff2b2b 0%, #d90d0d 100%);
+    border-radius: 22px 60px 22px 22px; 
+    padding: 16px;
+    box-shadow:
+        inset 0 0 0 4px #a80808,
+        0 0 0 6px #1a1a1a,
+        0 25px 50px rgba(0,0,0,0.7);
+    position: relative;
+}
+
+.pokedex::after {
+    content: "";
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    left: 50%;
+    width: 6px;
+    background: #1a1a1a;
+    opacity: 0.35;
+}
+
+/* ===== Cabeçalho ===== */
+.pokedex-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.lente-azul {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #e3fbff, #4fc3f7 45%, #0d6fb8 80%);
+    border: 5px solid #f2f2f2;
+    box-shadow:
+        0 0 0 3px #1a1a1a,
+        0 0 14px rgba(0,0,0,0.5),
+        inset 0 0 10px rgba(255,255,255,0.5);
+}
+
+.luzinhas {
+    display: flex;
+    gap: 7px;
+}
+
+.luzinhas span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #1a1a1a;
+}
+.luz-vermelha { background: #ff5252; }
+.luz-amarela  { background: #ffd93d; }
+.luz-verde    { background: #66d97a; }
+
+.titulo-pokedex {
+    margin-left: auto;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 3px;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+/* ===== Tela / visor ===== */
+.tela {
+    background: #0d1a0f;
+    border: 5px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 280px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    position: relative;
+    z-index: 1;
+}
+
+.tela h2 {
+    text-align: center;
+    color: #7CFC9A;
+    margin: 0 0 12px 0;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    font-size: 1.1em;
+    text-shadow: 0 0 6px rgba(124,252,154,0.6);
+    border-bottom: 2px dashed #2d4a30;
+    padding-bottom: 8px;
+}
+
+/* ===== Lista de Pokémon ===== */
+.pokemon-card {
+    background: #142817;
+    border: 1px solid #2d4a30;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: 'Courier New', monospace;
+    color: #cfffd8;
+}
+
+.indice {
+    display: inline-block;
+    background: #7CFC9A;
+    color: #0d1a0f;
+    font-weight: bold;
+    font-size: 0.75em;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+}
+
+.pokemon-info strong {
+    font-size: 1em;
+    color: #eafff0;
+}
+
+.tipo-badge {
+    display: inline-block;
+    background: #ffd93d;
+    color: #1a1a1a;
+    font-size: 0.68em;
+    font-weight: bold;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+
+.pokemon-desc {
+    font-size: 0.78em;
+    color: #9fd6ab;
+    margin: 3px 0 0 0;
+}
+
+.pokemon-data {
+    font-size: 0.68em;
+    color: #5f8f68;
+    margin: 2px 0 0 0;
+}
+
+.acoes {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+/* ===== Botões ===== */
+.btn {
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    color: #0d1a0f;
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+}
+
+.btn-editar  { background: #7CFC9A; }
+.btn-excluir { background: #ff8585; }
+
+.btn-add {
+    display: block;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    background: radial-gradient(circle at 35% 30%, #4fc3f7, #0d6fb8);
+    color: #fff;
+    margin: 16px auto 0 auto;
+    border-radius: 50%;
+    font-size: 1.6em;
+    font-weight: bold;
+    box-shadow: 0 0 0 4px #1a1a1a, 0 4px 8px rgba(0,0,0,0.5);
+    text-decoration: none;
+}
+
+.btn-voltar {
+    display: inline-block;
+    margin-top: 14px;
+    color: #7CFC9A;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+/* ===== Formulários ===== */
+form label {
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+    color: #7CFC9A;
+    font-size: 0.8em;
+    font-family: 'Courier New', monospace;
+}
+
+form input[type="text"],
+form input[type="date"],
+form textarea {
+    width: 100%;
+    padding: 7px;
+    margin-top: 3px;
+    border: 1px solid #2d4a30;
+    border-radius: 5px;
+    font-size: 0.9em;
+    background: #142817;
+    color: #eafff0;
+}
+
+form textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+form button {
+    margin-top: 14px;
+    width: 100%;
+    padding: 9px;
+    background: #7CFC9A;
+    color: #0d1a0f;
+    font-weight: bold;
+    border: none;
+    border-radius: 16px;
+    font-size: 0.9em;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+
+.vazio {
+    text-align: center;
+    color: #5f8f68;
+    padding: 20px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+.alerta {
+    background: #2d2a10;
+    border: 1px solid #ffd93d;
+    color: #ffd93d;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 0.78em;
+    margin-bottom: 10px;
+    font-family: 'Courier New', monospace;
+}
+
+/* ===== D-pad decorativo ===== */
+.dpad {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.dpad .botao-cinza {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #666, #333);
+    box-shadow: 0 0 0 2px #1a1a1a;
+}
+
+.dpad .botao-verde,
+.dpad .botao-vermelho {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #1a1a1a;
+}
+.dpad .botao-verde { background: #66d97a; }
+.dpad .botao-vermelho { background: #ff5252; }
