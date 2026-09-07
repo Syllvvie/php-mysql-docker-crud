@@ -1,0 +1,39 @@
+version: '3.8' # Define a versão da sintaxe do Docker Compose usada no arquivo
+
+services: # Bloco onde definimos todos os containers que farão parte do ambiente
+  app: # Nome do serviço responsável por rodar a aplicação web em PHP
+    image: php:8.1-apache # Utiliza a imagem oficial do PHP integrada com servidor Apache
+    container_name: pokedex_app # Define um nome fixo e legível para o container
+    ports: # Mapeamento de portas entre a máquina host (sua máquina) e o container
+      - "8080:80" # Mapeia a porta 80 do container para a porta 8080 do host (http://localhost:8080)
+    volumes: # Mapeia os arquivos locais para dentro do container
+      - ./:/var/www/html # # Sincroniza a pasta do projeto local com a pasta raiz do servidor web Apache
+    environment: # Variáveis de ambiente configuradas diretamente para acesso no código PHP
+      DB_HOST: db # Nome do serviço do banco de dados (resolvido automaticamente pela rede interna)
+      DB_USER: root # Nome de usuário administrativo do MySQL
+      DB_PASSWORD: rootpassword # Senha do usuário administrativo do MySQL
+      DB_NAME: pokedex # Nome do banco de dados que será criado automaticamente
+    networks: # Conecta o serviço a uma rede interna
+      - pokedex-network # Associa o container à rede personalizada definida abaixo
+    depends_on: # Define a ordem de inicialização dos containers
+      - db # O container 'app' aguarda a inicialização do container 'db'
+
+  db: # Nome do serviço do banco de dados relacional
+    image: mysql:8.0 # Utiliza a imagem oficial do MySQL na versão 8.0
+    container_name: pokedex_db # Define um nome fixo para o container do banco de dado
+    restart: always # Configura o container para reiniciar automaticamente caso ocorra alguma falha
+    environment: # Variáveis de ambiente padrão da imagem do MySQL para inicializar o banco
+      MYSQL_ROOT_PASSWORD: rootpassword # Configura a senha de root do MySQL
+      MYSQL_DATABASE: pokedex # Cria o banco de dados 'pokedex' no momento da subida
+    volumes: # Mapeamento de dados persistentes
+      - db_data:/var/lib/mysql # Mapeia o volume gerenciado pelo Docker para garantir a persistência dos dados
+    networks: # Conecta o serviço a uma rede interna
+      - pokedex-network # Associa o container à rede personalizada
+
+networks: # Bloco para declaração das redes personalizadas
+  pokedex-network: # Nome da rede personalizada
+    driver: bridge # Define o driver de rede como 'bridge' para permitir comunicação segura entre containers pelo nome
+    
+# Definição do volume persistente
+volumes: # Bloco para declaração dos volumes gerenciados pelo Docker
+  db_data: # Cria o volume nomeado para manter os dados salvos mesmo se o container for destruído
