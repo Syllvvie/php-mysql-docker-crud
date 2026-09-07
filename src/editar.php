@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = trim($_POST['tipo'] ?? '');
     $descricao = trim($_POST['descricao'] ?? '');
     $data_cadastro = $_POST['data_cadastro'] ?? '';
+    $imagem_url = trim($_POST['imagem_url'] ?? '');
 
     if ($nome === '' || $tipo === '' || $data_cadastro === '') {
         $erro = 'Preencha ao menos Nome, Tipo e Data de cadastro.';
@@ -23,12 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'tipo' => $tipo,
             'descricao' => $descricao,
             'data_cadastro' => $data_cadastro,
+            'imagem_url' => $imagem_url,
         ];
     } else {
         $stmt = $pdo->prepare(
-            "UPDATE pokemons SET nome = ?, tipo = ?, descricao = ?, data_cadastro = ? WHERE id = ?"
+            "UPDATE pokemons SET nome = ?, tipo = ?, descricao = ?, data_cadastro = ?, imagem_url = ? WHERE id = ?"
         );
-        $stmt->execute([$nome, $tipo, $descricao, $data_cadastro, $id]);
+        $stmt->execute([$nome, $tipo, $descricao, $data_cadastro, $imagem_url ?: null, $id]);
 
         header('Location: index.php');
         exit;
@@ -71,8 +73,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alerta"><?= htmlspecialchars($erro) ?></div>
             <?php endif; ?>
 
+            <div class="busca-api">
+                <label for="busca_pokeapi">Buscar na PokeAPI (opcional, sobrescreve os campos abaixo)</label>
+                <div class="busca-api-linha">
+                    <input type="text" id="busca_pokeapi" placeholder="Ex: pikachu ou 25">
+                    <button type="button" id="btn_buscar_pokeapi">Buscar</button>
+                </div>
+                <p id="busca_status" class="busca-status"></p>
+            </div>
+
+            <img id="sprite_preview" class="sprite-preview"
+                 style="<?= empty($pokemon['imagem_url']) ? 'display:none;' : '' ?>"
+                 src="<?= htmlspecialchars($pokemon['imagem_url'] ?? '') ?>" alt="Sprite do Pokémon">
+
             <form method="POST" action="editar.php">
                 <input type="hidden" name="id" value="<?= htmlspecialchars($pokemon['id']) ?>">
+                <input type="hidden" id="imagem_url" name="imagem_url" value="<?= htmlspecialchars($pokemon['imagem_url'] ?? '') ?>">
 
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($pokemon['nome']) ?>">
@@ -93,6 +109,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a class="btn-voltar" href="index.php">&larr; Voltar para a listagem</a>
         </div>
     </div>
+
+    <script>
+        document.getElementById('btn_buscar_pokeapi').addEventListener('click', async () => {
+            const termo = document.getElementById('busca_pokeapi').value.trim().toLowerCase();
+            const status = document.getElementById('busca_status');
+            const preview = document.getElementById('sprite_preview');
+
+            if (!termo) {
+                status.textContent = 'Digite um nome ou número (ex: pikachu, 25).';
+                return;
+            }
+
+            status.textContent = 'Buscando...';
+
+            try {
+                const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${termo}`);
+
+                if (!resposta.ok) {
+                    status.textContent = 'Pokémon não encontrado na PokeAPI.';
+                    return;
+                }
+
+                const dados = await resposta.json();
+
+                document.getElementById('nome').value =
+                    dados.name.charAt(0).toUpperCase() + dados.name.slice(1);
+
+                const tipos = dados.types.map(t => t.type.name);
+                document.getElementById('tipo').value = tipos.join(', ');
+
+                const sprite = dados.sprites.other['official-artwork'].front_default
+                            || dados.sprites.front_default
+                            || '';
+                document.getElementById('imagem_url').value = sprite;
+
+                if (sprite) {
+                    preview.src = sprite;
+                    preview.style.display = 'block';
+                }
+
+                status.textContent = `${dados.name} encontrado! Revise os dados e atualize.`;
+            } catch (erro) {
+                status.textContent = 'Erro ao conectar com a PokeAPI. Verifique sua internet.';
+            }
+        });
+    </script>
 
 </body>
 </html>

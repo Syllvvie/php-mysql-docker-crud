@@ -18,7 +18,8 @@ try {
             nome VARCHAR(100) NOT NULL,
             tipo VARCHAR(50) NOT NULL,
             descricao TEXT,
-            data_cadastro DATE NOT NULL
+            data_cadastro DATE NOT NULL,
+            imagem_url VARCHAR(255)
         )
     ");
 

@@ -274,6 +274,69 @@ form button {
     font-family: 'Courier New', monospace;
 }
 
+/* ===== Integração PokeAPI ===== */
+.busca-api {
+    background: #142817;
+    border: 1px dashed #2d4a30;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+}
+
+.busca-api label {
+    margin-top: 0;
+}
+
+.busca-api-linha {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.busca-api-linha input {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #2d4a30;
+    border-radius: 5px;
+    background: #0d1a0f;
+    color: #eafff0;
+    font-size: 0.85em;
+}
+
+.busca-api-linha button {
+    padding: 6px 12px;
+    background: #4fc3f7;
+    color: #0d1a0f;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+}
+
+.busca-status {
+    margin: 6px 0 0 0;
+    font-size: 0.72em;
+    color: #7CFC9A;
+    font-family: 'Courier New', monospace;
+}
+
+.sprite-preview {
+    display: block;
+    max-width: 96px;
+    margin: 0 auto 10px auto;
+    image-rendering: pixelated;
+}
+
+.pokemon-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
 /* ===== D-pad decorativo ===== */
 .dpad {
     display: flex;

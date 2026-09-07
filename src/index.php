@@ -36,6 +36,9 @@ $pokemons = $stmt->fetchAll();
             <?php else: ?>
                 <?php foreach ($pokemons as $p): ?>
                     <div class="pokemon-card">
+                        <?php if (!empty($p['imagem_url'])): ?>
+                            <img class="pokemon-thumb" src="<?= htmlspecialchars($p['imagem_url']) ?>" alt="<?= htmlspecialchars($p['nome']) ?>">
+                        <?php endif; ?>
                         <div class="pokemon-info">
                             <span class="indice">#<?= str_pad($p['id'], 3, '0', STR_PAD_LEFT) ?></span>
                             <strong><?= htmlspecialchars($p['nome']) ?></strong>
