@@ -1,4 +1,4 @@
-name: Deploy Automático PHP-MySQL-Docker
+name: Deploy
 
 on:
   push:
