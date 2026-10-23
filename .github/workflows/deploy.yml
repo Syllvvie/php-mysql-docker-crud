@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: doccker
+      - name: Docker
         run: |
           echo "Iniciando o deploy..."
           docker compose down
