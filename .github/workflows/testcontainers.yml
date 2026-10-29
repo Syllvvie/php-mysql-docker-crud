@@ -15,8 +15,6 @@ jobs:
 
       - name: Test Containers
         run: |
-          echo "Iniciando validação do ambiente..."
           docker compose up -d
           sleep 5
           docker compose ps
-          echo "Ambiente validado com sucesso!"
