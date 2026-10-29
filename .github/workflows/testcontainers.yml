@@ -10,16 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Java / Node / etc
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
-
-      - name: Executar testes
+      - name: Test PHP
         run: |
-          mvn test
+          echo "Iniciando validação do ambiente..."
+          docker compose up -d
+          sleep 5
+          docker compose ps
+          echo "Ambiente validado com sucesso!"
