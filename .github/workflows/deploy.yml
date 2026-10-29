@@ -5,7 +5,7 @@ on:
 
 jobs:
   test-containers:
-    uses: ./.github/workflows/testecontainers.yml
+    uses: ./.github/workflows/testcontainers.yml
     
   deploy:
     runs-on: self-hosted
