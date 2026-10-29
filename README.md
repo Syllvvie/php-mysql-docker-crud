@@ -62,7 +62,7 @@ Nenhuma outra dependência é necessária na máquina.
    ```
    (os dados do banco continuam salvos no volume `db_data`, mesmo depois do `down`)
 
-## 4. Explicação do `docker-compose.yml`
+## 4. Explicação do `compose.yaml`
 
 O arquivo já contém comentários linha a linha explicando cada diretiva. Em resumo:
 
@@ -94,7 +94,156 @@ Os dois serviços são conectados à rede personalizada `pokedex-network` (drive
 o que permite que o container `app` se conecte ao banco simplesmente usando o nome do
 serviço (`db`) como host — é exatamente o valor usado na variável `DB_HOST`.
 
-## 5. Autores
+## 5. Deploy automatizado com GitHub Actions (self-hosted runner)
+
+Além de rodar o projeto manualmente (seção 3), o repositório possui um **workflow de deploy**
+no GitHub Actions que sobe a aplicação automaticamente em uma máquina própria, usando um
+**runner self-hosted**.
+
+### 5.1 O que é um runner self-hosted?
+
+O *runner* é o programa que de fato **executa** os passos de um workflow. Por padrão, o
+GitHub usa runners hospedados por ele (`ubuntu-latest`, por exemplo), que são máquinas
+virtuais temporárias na nuvem. Já um **runner self-hosted** é uma máquina **nossa** (um PC,
+notebook ou servidor) que fica conectada ao GitHub e executa os jobs no lugar das VMs dele.
+
+Neste projeto isso é necessário porque o objetivo do deploy é subir os containers
+(`pokedex_app` e `pokedex_db`) **na nossa própria máquina**, onde o Docker está instalado e
+onde a aplicação fica acessível em `http://localhost:8080`. Um runner na nuvem rodaria o
+deploy em uma VM que é descartada logo depois, sem nenhum efeito na nossa máquina.
+
+### 5.2 Como o fluxo funciona
+
+```mermaid
+flowchart LR
+    A[Desenvolvedor] -->|Actions > Deploy > Run workflow| B[GitHub]
+    B -->|envia o job| C[Runner self-hosted<br/>na nossa máquina]
+    C -->|1. baixa o código| D[actions/checkout]
+    C -->|2. docker compose down| E[Para os containers antigos]
+    C -->|3. docker compose up -d --build| F[Sobe app + db atualizados]
+    F --> G[http://localhost:8080]
+```
+
+O runner fica **escutando** o GitHub (ele faz as requisições de saída, então não é preciso
+abrir portas no roteador). Quando um workflow é disparado, o GitHub entrega o job ao runner,
+que o executa localmente e devolve os logs para a aba *Actions*.
+
+### 5.3 O workflow `.github/workflows/deploy.yml`
+
+```yaml
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker
+        run: |
+          echo "Iniciando o deploy..."
+          docker compose down
+          docker compose up -d --build
+          echo "Deploy realizado com sucesso!"
+```
+
+Explicação de cada parte:
+
+- **`on: workflow_dispatch`** — o workflow é disparado **manualmente**, por um botão na aba
+  *Actions* do GitHub. Ele não roda sozinho a cada push.
+- **`runs-on: self-hosted`** — diz ao GitHub para enviar o job a um runner self-hosted, e não
+  a uma VM hospedada por ele.
+- **`actions/checkout@v4`** — baixa o código do repositório para a pasta de trabalho do
+  runner (`_work`), garantindo que o deploy use a versão mais recente do código.
+- **`docker compose down`** — para e remove os containers da versão anterior. O volume
+  `db_data` **não é removido** (não usamos a flag `-v`), então os dados do banco continuam
+  salvos.
+- **`docker compose up -d --build`** — sobe os containers novamente em segundo plano (`-d`),
+  reconstruindo o que for necessário (`--build`).
+
+### 5.4 Como configurar o runner na máquina
+
+**Pré-requisitos na máquina que será o runner:**
+
+- Docker e Docker Compose instalados e funcionando
+- Git instalado
+- O usuário que executa o runner precisa ter permissão para usar o Docker
+  (no Linux: `sudo usermod -aG docker $USER`, depois reiniciar a sessão)
+- Conexão com a internet (para falar com o GitHub)
+
+**Passo a passo:**
+
+1. No repositório do GitHub, vá em **Settings → Actions → Runners → New self-hosted runner**.
+2. Escolha o sistema operacional da máquina (Linux, Windows ou macOS). O GitHub mostra os
+   comandos já preenchidos com a URL do repositório e um **token de registro temporário**.
+3. Baixe e extraia o runner, seguindo os comandos exibidos na própria página. No Linux,
+   por exemplo:
+   ```bash
+   mkdir actions-runner && cd actions-runner
+   curl -o actions-runner-linux-x64.tar.gz -L <URL_EXIBIDA_PELO_GITHUB>
+   tar xzf actions-runner-linux-x64.tar.gz
+   ```
+4. Registre o runner no repositório:
+   ```bash
+   ./config.sh --url https://github.com/<USUARIO>/<REPOSITORIO> --token <TOKEN_EXIBIDO>
+   ```
+   Durante a configuração, o nome e as labels podem ser mantidos no padrão. A label
+   `self-hosted` é adicionada automaticamente, e é ela que o `runs-on` do workflow usa.
+5. Inicie o runner:
+   ```bash
+   ./run.sh
+   ```
+   No Windows, os equivalentes são `config.cmd` e `run.cmd`.
+6. Volte em **Settings → Actions → Runners**: o runner deve aparecer com o status
+   **Idle** (online e aguardando jobs).
+
+> **Dica:** com `./run.sh` o runner só funciona enquanto o terminal estiver aberto. Para
+> deixá-lo rodando em segundo plano e iniciando junto com a máquina, instale-o como serviço
+> (Linux: `sudo ./svc.sh install && sudo ./svc.sh start`; Windows: o `config.cmd` oferece
+> instalar como serviço durante a configuração).
+
+> **Atenção:** o token de registro expira em poucos minutos e **não deve ser commitado** nem
+> compartilhado. Se precisar registrar outro runner, gere um novo token na mesma tela.
+
+### 5.5 Como executar o deploy
+
+1. Confirme que o runner está **online** (*Idle*) em Settings → Actions → Runners.
+2. Vá na aba **Actions** do repositório e selecione o workflow **Deploy**.
+3. Clique em **Run workflow** e confirme.
+4. Acompanhe a execução pelos logs. Ao terminar com sucesso, a aplicação estará atualizada em
+   `http://localhost:8080` na máquina do runner.
+
+Se o runner estiver desligado ou offline, o job fica na fila (*Queued*) até ele voltar.
+
+### 5.6 Observações importantes
+
+- **A aplicação roda na máquina do runner.** O bind mount `./src:/var/www/html` aponta para a
+  pasta de trabalho do runner (`_work/<repo>/<repo>/src`), que é atualizada pelo `checkout` a
+  cada execução.
+- **Nomes de container fixos.** Como o `compose.yaml` usa `container_name`, só pode existir
+  uma instância do projeto por máquina. Por isso o `docker compose down` vem antes do `up`.
+- **Segurança.** Um runner self-hosted executa código do repositório diretamente na sua
+  máquina. Use-o apenas em repositórios confiáveis e evite habilitá-lo para pull requests
+  vindos de forks de desconhecidos. Aqui o risco é reduzido porque o workflow só é disparado
+  manualmente.
+
+### 5.7 Problemas comuns
+
+| Problema | Possível causa / solução |
+|---|---|
+| Job fica em *Queued* e não começa | O runner está offline. Inicie o `./run.sh` ou o serviço. |
+| `docker: command not found` | O Docker não está instalado ou não está no `PATH` do usuário do runner. |
+| `permission denied` ao acessar o Docker | O usuário do runner não está no grupo `docker` (Linux). |
+| `docker compose` não é reconhecido | Versão antiga do Docker. Instale o plugin Compose v2. |
+| `port is already allocated` (8080) | Outro processo ou container já usa a porta 8080 na máquina. |
+| Erro de registro ao rodar `config.sh` | O token expirou. Gere um novo em *New self-hosted runner*. |
+
+## 6. Autores
 
 - Joao Vitor Paiva Borges
 - Nikolas Lodi Monteiro
