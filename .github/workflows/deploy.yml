@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  test-containers:
+    uses: ./.github/workflows/testecontainers.yml
+    
   deploy:
     runs-on: self-hosted
-
+    needs: test-containers
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
