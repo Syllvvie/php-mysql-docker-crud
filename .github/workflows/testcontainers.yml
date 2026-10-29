@@ -1,0 +1,25 @@
+name: Test Containers
+
+on:
+  push:
+    branches: [ main ]
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java / Node / etc
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Executar testes
+        run: |
+          mvn test
