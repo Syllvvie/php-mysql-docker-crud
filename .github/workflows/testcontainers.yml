@@ -1,4 +1,4 @@
-name: Test Containers
+name: Test
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  test:
+  test-containers:
     runs-on: ubuntu-latest
 
     steps:
